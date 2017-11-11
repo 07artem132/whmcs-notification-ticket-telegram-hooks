@@ -10,7 +10,7 @@ use WHMCS\Database\Capsule;
 
 require __DIR__ . '/vendor/autoload.php';
 
-function GetAdminPath(): string {
+function GetAdminPath() {
 	global $customadminpath;
 
 	if ( isset( $customadminpath ) && ! empty( $customadminpath ) ) {
@@ -22,18 +22,17 @@ function GetAdminPath(): string {
 
 function GetConfigModule() {
 	$AddonModuleConfig = Capsule::table( 'tbladdonmodules' )->where( 'module', '=', 'NotificationTicketTelegram' )->get();
-	$config            = new class {
-	};
+	$config            = [];
 
 	for ( $i = 0; $i < count( $AddonModuleConfig ); $i ++ ) //var_dump($vars);
 	{
-		$config->{$AddonModuleConfig[ $i ]->setting} = $AddonModuleConfig[ $i ]->value;
+		$config[ $AddonModuleConfig[ $i ]->setting ] = $AddonModuleConfig[ $i ]->value;
 	}
 
 	return $config;
 }
 
-function GetSystemURL(): string {
+function GetSystemURL() {
 	return Capsule::table( 'tblconfiguration' )->where( 'setting', '=', 'SystemURL' )->first()->value;
 }
 
@@ -44,12 +43,12 @@ function FormaterTicketMessage( $message ) {
 add_hook( 'TicketOpen', 1, function ( $vars ) {
 	$config = GetConfigModule();
 
-	if ( array_key_exists( $vars['deptid'], array_flip( explode( ',', $config->ignore_deptid ) ) ) ) {
+	if ( array_key_exists( $vars['deptid'], array_flip( explode( ',', $config['ignore_deptid'] ) ) ) ) {
 		return;
 	}
 
 	try {
-		new Longman\TelegramBot\Telegram( $config->api_key, $config->username ); //
+		new Longman\TelegramBot\Telegram( $config['api_key'], $config['username'] ); //
 	} catch ( \Exception $e ) {
 		logActivity( 'NotificationTicketTelegram: ' . $e->getMessage() );
 		logModuleCall( 'NotificationTicketTelegram', 'init', null, $e->getMessage() );
@@ -63,7 +62,7 @@ add_hook( 'TicketOpen', 1, function ( $vars ) {
 	           . 'Ссылка: ' . GetSystemURL() . GetAdminPath() . '/supporttickets.php?action=view&id=' . $vars['ticketid'] . PHP_EOL
 	           . 'Сообщение: ' . FormaterTicketMessage( $vars['message'] );
 	$data    = [
-		'chat_id' => $config->group_name,
+		'chat_id' => $config['group_name'],
 		'text'    => $Message,
 	];
 	$result  = Longman\TelegramBot\Request::sendMessage( $data );
@@ -78,12 +77,12 @@ add_hook( 'TicketOpen', 1, function ( $vars ) {
 add_hook( 'TicketUserReply', 1, function ( $vars ) {
 	$config = GetConfigModule();
 
-	if ( array_key_exists( $vars['deptid'], array_flip( explode( ',', $config->ignore_deptid ) ) ) ) {
+	if ( array_key_exists( $vars['deptid'], array_flip( explode( ',', $config['ignore_deptid'] ) ) ) ) {
 		return;
 	}
 
 	try {
-		new Longman\TelegramBot\Telegram( $config->api_key, $config->username ); //
+		new Longman\TelegramBot\Telegram( $config['api_key'], $config['username'] ); //
 	} catch ( \Exception $e ) {
 		logActivity( 'NotificationTicketTelegram: ' . $e->getMessage() );
 		logModuleCall( 'NotificationTicketTelegram', 'init', null, $e->getMessage() );
@@ -97,7 +96,7 @@ add_hook( 'TicketUserReply', 1, function ( $vars ) {
 	           . 'Ссылка: ' . GetSystemURL() . GetAdminPath() . '/supporttickets.php?action=view&id=' . $vars['ticketid'] . PHP_EOL
 	           . 'Сообщение: ' . FormaterTicketMessage( $vars['message'] );
 	$data    = [
-		'chat_id' => $config->group_name,
+		'chat_id' => $config['group_name'],
 		'text'    => $Message,
 	];
 	$result  = Longman\TelegramBot\Request::sendMessage( $data );
