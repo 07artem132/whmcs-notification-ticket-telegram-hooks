@@ -10,7 +10,7 @@
 
 function NotificationTicketTelegram_config() {
 	$configarray = array(
-		"name" => "Уведомления о новых неотвеченных тикетах в телеграмме",
+		"name" => "Telegram ticket notifi",
 		"description" => "",
 		"version" => "1.0",
 		"author" => "service-voice",
